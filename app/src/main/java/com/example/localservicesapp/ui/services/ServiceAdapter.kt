@@ -8,23 +8,14 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.localservicesapp.R
-import com.example.localservicesapp.data.model.Service
 
 class ServiceAdapter(
-    private var services: List<Service>,
+    private val services: List<SimpleService>,
     private val isAdmin: Boolean,
-    private val onServiceClick: (Service) -> Unit,
-    private val onEditClick: (Service) -> Unit,
-    private val onDeleteClick: (Service) -> Unit
+    private val onServiceClick: (SimpleService) -> Unit,
+    private val onEditClick: (SimpleService) -> Unit,
+    private val onDeleteClick: (SimpleService) -> Unit
 ) : RecyclerView.Adapter<ServiceAdapter.ServiceViewHolder>() {
-
-    class ServiceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val textViewServiceName: TextView = itemView.findViewById(R.id.textViewServiceName)
-        val textViewServiceDescription: TextView = itemView.findViewById(R.id.textViewServiceDescription)
-        val layoutAdminButtons: LinearLayout = itemView.findViewById(R.id.layoutAdminButtons)
-        val buttonEdit: Button = itemView.findViewById(R.id.buttonEdit)
-        val buttonDelete: Button = itemView.findViewById(R.id.buttonDelete)
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ServiceViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -33,34 +24,32 @@ class ServiceAdapter(
     }
 
     override fun onBindViewHolder(holder: ServiceViewHolder, position: Int) {
-        val service = services[position]
-        
-        holder.textViewServiceName.text = service.serviceName
-        holder.textViewServiceDescription.text = service.description
-        
-        if (isAdmin) {
-            holder.layoutAdminButtons.visibility = View.VISIBLE
-            
-            holder.buttonEdit.setOnClickListener {
-                onEditClick(service)
-            }
-            
-            holder.buttonDelete.setOnClickListener {
-                onDeleteClick(service)
-            }
-        } else {
-            holder.layoutAdminButtons.visibility = View.GONE
-        }
-        
-        holder.itemView.setOnClickListener {
-            onServiceClick(service)
-        }
+        holder.bind(services[position])
     }
 
-    override fun getItemCount(): Int = services.size
+    override fun getItemCount() = services.size
 
-    fun updateServices(newServices: List<Service>) {
-        services = newServices
-        notifyDataSetChanged()
+
+
+    inner class ServiceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val textServiceName: TextView = itemView.findViewById(R.id.textServiceName)
+        private val textServiceDescription: TextView = itemView.findViewById(R.id.textServiceDescription)
+        private val layoutAdminButtons: LinearLayout = itemView.findViewById(R.id.layoutAdminButtons)
+        private val buttonEdit: Button = itemView.findViewById(R.id.buttonEdit)
+        private val buttonDelete: Button = itemView.findViewById(R.id.buttonDelete)
+
+        fun bind(service: SimpleService) {
+            textServiceName.text = service.name
+            textServiceDescription.text = service.description
+
+            if (isAdmin) {
+                layoutAdminButtons.visibility = View.VISIBLE
+                buttonEdit.setOnClickListener { onEditClick(service) }
+                buttonDelete.setOnClickListener { onDeleteClick(service) }
+            } else {
+                layoutAdminButtons.visibility = View.GONE
+                itemView.setOnClickListener { onServiceClick(service) }
+            }
+        }
     }
 }

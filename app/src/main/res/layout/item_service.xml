@@ -1,64 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardElevation="4dp"
-    app:cardCornerRadius="8dp">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp"
+    android:foreground="?android:attr/selectableItemBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="20dp">
 
+        <!-- Service Icon -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_gravity="center"
+            app:cardCornerRadius="30dp"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="16dp">
+
+            <ImageView
+                android:id="@+id/imageServiceIcon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_service_default"
+                android:scaleType="centerCrop" />
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Service Name -->
         <TextView
-            android:id="@+id/textViewServiceName"
+            android:id="@+id/textServiceName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Service Name"
+            android:text="Plumbing"
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:gravity="center"
+            android:layout_marginBottom="8dp" />
 
+        <!-- Service Description -->
         <TextView
-            android:id="@+id/textViewServiceDescription"
+            android:id="@+id/textServiceDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Service Description"
-            android:textSize="14sp" />
+            android:text="Professional plumbing services"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:gravity="center"
+            android:maxLines="2"
+            android:ellipsize="end" />
 
+        <!-- Admin Buttons -->
         <LinearLayout
             android:id="@+id/layoutAdminButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:orientation="horizontal"
+            android:layout_marginTop="12dp"
             android:visibility="gone">
 
             <Button
                 android:id="@+id/buttonEdit"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="36dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
                 android:text="Edit"
-                android:textColor="@color/purple_500" />
+                android:textSize="12sp"
+                android:background="@drawable/button_outline"
+                android:layout_marginEnd="8dp" />
 
             <Button
                 android:id="@+id/buttonDelete"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="36dp"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp"
                 android:text="Delete"
-                android:textColor="@color/red" />
+                android:textSize="12sp"
+                android:background="@drawable/button_danger"
+                android:textColor="@android:color/white" />
 
         </LinearLayout>
 
     </LinearLayout>
 
-</com.google.android.material.card.MaterialCardView>
+</androidx.cardview.widget.CardView>
