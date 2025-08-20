@@ -12,12 +12,11 @@ class BookingSuccessActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_booking_success)
 
-        val buttonBackToServices = findViewById<Button>(R.id.buttonBackToServices)
-        buttonBackToServices.setOnClickListener {
-            // Navigate back to services screen
+        val buttonBackToHome = findViewById<Button>(R.id.buttonBackToHome)
+        
+        buttonBackToHome.setOnClickListener {
             val intent = Intent(this, ServicesActivity::class.java)
-            // In a real app, you would pass the user role here
-            intent.putExtra("user_role", "customer")
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
             finish()
         }

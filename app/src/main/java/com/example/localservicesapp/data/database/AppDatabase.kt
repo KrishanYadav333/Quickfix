@@ -12,7 +12,7 @@ import com.example.localservicesapp.data.model.Provider
 @Database(
     entities = [Service::class, Provider::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun serviceDao(): ServiceDao
@@ -27,8 +27,11 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "quickfix_database"
-                ).build()
+                    "quickfix_pro_db"
+                )
+                .fallbackToDestructiveMigration()
+                .allowMainThreadQueries()
+                .build()
                 INSTANCE = instance
                 instance
             }

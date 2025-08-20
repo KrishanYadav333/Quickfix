@@ -9,6 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.localservicesapp.R
 import com.example.localservicesapp.ui.providers.ProvidersActivity
 import com.example.localservicesapp.data.database.AppDatabase
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class ServicesActivity : AppCompatActivity() {
@@ -25,6 +29,15 @@ class ServicesActivity : AppCompatActivity() {
         isAdmin = userRole == "admin"
         
         database = AppDatabase.getDatabase(this)
+        
+        // Force database creation and populate with data
+        lifecycleScope.launch {
+            val serviceDao = database.serviceDao()
+            val existingServices = serviceDao.getAllServices().first()
+            if (existingServices.isEmpty()) {
+                insertSampleServices()
+            }
+        }
 
         setupRecyclerView()
         loadSampleServices()
@@ -44,7 +57,7 @@ class ServicesActivity : AppCompatActivity() {
                 }
             },
             onEditClick = { service ->
-                Toast.makeText(this, "Edit ${service.name}", Toast.LENGTH_SHORT).show()
+                // Edit functionality
             },
             onDeleteClick = { service ->
                 services.remove(service)
@@ -57,22 +70,36 @@ class ServicesActivity : AppCompatActivity() {
         recyclerView.adapter = serviceAdapter
     }
 
+    private fun insertSampleServices() {
+        val serviceDao = database.serviceDao()
+        lifecycleScope.launch {
+            val sampleServices = listOf(
+                com.example.localservicesapp.data.model.Service(serviceName = "Plumber", description = "Fix pipes, leaks & water issues"),
+                com.example.localservicesapp.data.model.Service(serviceName = "Electrician", description = "Electrical repairs & installations"),
+                com.example.localservicesapp.data.model.Service(serviceName = "Mechanic", description = "Car & bike repair services"),
+                com.example.localservicesapp.data.model.Service(serviceName = "Cleaning", description = "Home & office cleaning"),
+                com.example.localservicesapp.data.model.Service(serviceName = "Carpenter", description = "Furniture & wood work"),
+                com.example.localservicesapp.data.model.Service(serviceName = "Painter", description = "Interior & exterior painting"),
+                com.example.localservicesapp.data.model.Service(serviceName = "AC Repair", description = "AC installation & maintenance"),
+                com.example.localservicesapp.data.model.Service(serviceName = "Appliance Repair", description = "Fix washing machine, fridge etc"),
+                com.example.localservicesapp.data.model.Service(serviceName = "Pest Control", description = "Remove insects & pests"),
+                com.example.localservicesapp.data.model.Service(serviceName = "Gardening", description = "Lawn care & plant maintenance"),
+                com.example.localservicesapp.data.model.Service(serviceName = "Locksmith", description = "Lock repair & key services"),
+                com.example.localservicesapp.data.model.Service(serviceName = "Beauty & Spa", description = "Home salon & spa services")
+            )
+            sampleServices.forEach { serviceDao.insert(it) }
+        }
+    }
+
     private fun loadSampleServices() {
-        services.addAll(listOf(
-            SimpleService("Plumber", "Fix pipes, leaks & water issues"),
-            SimpleService("Electrician", "Electrical repairs & installations"),
-            SimpleService("Mechanic", "Car & bike repair services"),
-            SimpleService("Cleaning", "Home & office cleaning"),
-            SimpleService("Carpenter", "Furniture & wood work"),
-            SimpleService("Painter", "Interior & exterior painting"),
-            SimpleService("AC Repair", "AC installation & maintenance"),
-            SimpleService("Appliance Repair", "Fix washing machine, fridge etc"),
-            SimpleService("Pest Control", "Remove insects & pests"),
-            SimpleService("Gardening", "Lawn care & plant maintenance"),
-            SimpleService("Locksmith", "Lock repair & key services"),
-            SimpleService("Beauty & Spa", "Home salon & spa services")
-        ))
-        serviceAdapter.notifyDataSetChanged()
+        // Load services from database
+        lifecycleScope.launch {
+            database.serviceDao().getAllServices().collect { dbServices ->
+                services.clear()
+                services.addAll(dbServices.map { SimpleService(it.serviceName, it.description) })
+                serviceAdapter.notifyDataSetChanged()
+            }
+        }
     }
 
     private fun setupFab() {

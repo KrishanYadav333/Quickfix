@@ -15,7 +15,7 @@ class ProviderAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProviderViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(android.R.layout.simple_list_item_1, parent, false)
+            .inflate(R.layout.item_provider, parent, false)
         return ProviderViewHolder(view)
     }
 
@@ -26,8 +26,14 @@ class ProviderAdapter(
     override fun getItemCount() = providers.size
 
     inner class ProviderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val textProviderName: TextView = itemView.findViewById(R.id.textProviderName)
+        private val textProviderContact: TextView = itemView.findViewById(R.id.textProviderContact)
+        private val buttonBookNow: Button = itemView.findViewById(R.id.buttonBookNow)
+
         fun bind(provider: SimpleProvider) {
-            itemView.setOnClickListener {
+            textProviderName.text = provider.name
+            textProviderContact.text = provider.contact
+            buttonBookNow.setOnClickListener {
                 onBookClick(provider)
             }
         }
