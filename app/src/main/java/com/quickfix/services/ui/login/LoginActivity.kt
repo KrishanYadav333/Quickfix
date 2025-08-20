@@ -5,18 +5,24 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.quickfix.services.R
+import com.quickfix.services.data.database.AppDatabase
 import com.quickfix.services.ui.services.ServicesActivity
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var editTextEmail: TextInputEditText
     private lateinit var editTextPassword: TextInputEditText
+    private lateinit var database: AppDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        database = AppDatabase.getDatabase(this)
+        
         editTextEmail = findViewById(R.id.editTextEmail)
         editTextPassword = findViewById(R.id.editTextPassword)
         val buttonLogin = findViewById<Button>(R.id.buttonLogin)
@@ -40,11 +46,38 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
-        // In a real app, you would verify the credentials against the database
-        // For now, we'll just navigate to the services screen
-        val intent = Intent(this, ServicesActivity::class.java)
-        intent.putExtra("user_role", "customer") // Default to customer
-        startActivity(intent)
-        finish()
+        // Check for admin credentials
+        if (email == "admin" && password == "admin123") {
+            Toast.makeText(this, "Admin login successful", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, com.quickfix.services.ui.admin.AdminDashboardActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
+        }
+
+        // Check database for customer credentials
+        lifecycleScope.launch {
+            try {
+                val user = database.userDao().getUserByCredentials(email, password)
+                if (user != null) {
+                    if (user.isBlocked) {
+                        Toast.makeText(this@LoginActivity, "Your account has been blocked. Contact admin.", Toast.LENGTH_LONG).show()
+                        return@launch
+                    }
+                    
+                    Toast.makeText(this@LoginActivity, "Welcome back, ${user.name}!", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this@LoginActivity, ServicesActivity::class.java)
+                    intent.putExtra("user_role", "customer")
+                    intent.putExtra("customer_name", user.name)
+                    intent.putExtra("customer_email", user.email)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    Toast.makeText(this@LoginActivity, "Invalid email or password", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@LoginActivity, "Login failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

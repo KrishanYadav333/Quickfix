@@ -8,5 +8,7 @@ data class Service(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val serviceName: String,
-    val description: String
+    val description: String,
+    val imageUrl: String = "",
+    val isVisible: Boolean = true
 )

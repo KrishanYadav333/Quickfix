@@ -18,10 +18,13 @@ class ProvidersActivity : AppCompatActivity() {
         setContentView(R.layout.activity_providers)
 
         val serviceName = intent.getStringExtra("service_name") ?: "Service"
+        val customerName = intent.getStringExtra("customer_name") ?: "Customer"
+        val customerEmail = intent.getStringExtra("customer_email") ?: "guest@quickfix.com"
         title = "$serviceName Providers"
 
         setupRecyclerView()
         loadSampleProviders(serviceName)
+        setupLogout()
     }
 
     private fun setupRecyclerView() {
@@ -29,6 +32,9 @@ class ProvidersActivity : AppCompatActivity() {
         providerAdapter = ProviderAdapter(providers) { provider ->
             val intent = Intent(this, BookingActivity::class.java)
             intent.putExtra("provider_name", provider.name)
+            intent.putExtra("service_name", intent.getStringExtra("service_name"))
+            intent.putExtra("customer_name", intent.getStringExtra("customer_name"))
+            intent.putExtra("customer_email", intent.getStringExtra("customer_email"))
             startActivity(intent)
         }
         
@@ -106,6 +112,16 @@ class ProvidersActivity : AppCompatActivity() {
         }
         providers.addAll(serviceProviders)
         providerAdapter.notifyDataSetChanged()
+    }
+    
+    private fun setupLogout() {
+        val buttonLogout = findViewById<android.widget.Button>(R.id.buttonLogoutProviders)
+        buttonLogout.setOnClickListener {
+            val intent = android.content.Intent(this, com.quickfix.services.ui.login.LoginActivity::class.java)
+            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+        }
     }
 }
 

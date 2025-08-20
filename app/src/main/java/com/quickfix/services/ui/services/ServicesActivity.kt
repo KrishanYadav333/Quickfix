@@ -18,8 +18,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 class ServicesActivity : AppCompatActivity() {
     private lateinit var serviceAdapter: ServiceAdapter
     private var isAdmin = false
-    private val services = mutableListOf<SimpleService>()
+    private val services = mutableListOf<com.quickfix.services.data.model.Service>()
     private lateinit var database: AppDatabase
+    private var customerName = ""
+    private var customerEmail = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +29,8 @@ class ServicesActivity : AppCompatActivity() {
 
         val userRole = intent.getStringExtra("user_role") ?: "customer"
         isAdmin = userRole == "admin"
+        customerName = intent.getStringExtra("customer_name") ?: "Customer"
+        customerEmail = intent.getStringExtra("customer_email") ?: "guest@quickfix.com"
         
         database = AppDatabase.getDatabase(this)
         
@@ -42,6 +46,7 @@ class ServicesActivity : AppCompatActivity() {
         setupRecyclerView()
         loadSampleServices()
         setupFab()
+        setupLogout()
     }
 
     private fun setupRecyclerView() {
@@ -52,7 +57,9 @@ class ServicesActivity : AppCompatActivity() {
             onServiceClick = { service ->
                 if (!isAdmin) {
                     val intent = Intent(this, ProvidersActivity::class.java)
-                    intent.putExtra("service_name", service.name)
+                    intent.putExtra("service_name", service.serviceName)
+                    intent.putExtra("customer_name", customerName)
+                    intent.putExtra("customer_email", customerEmail)
                     startActivity(intent)
                 }
             },
@@ -60,9 +67,17 @@ class ServicesActivity : AppCompatActivity() {
                 // Edit functionality
             },
             onDeleteClick = { service ->
-                services.remove(service)
-                serviceAdapter.notifyDataSetChanged()
-                Toast.makeText(this, "Deleted ${service.name}", Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch {
+                    database.serviceDao().delete(service)
+                    Toast.makeText(this@ServicesActivity, "Deleted ${service.serviceName}", Toast.LENGTH_SHORT).show()
+                }
+            },
+            onToggleVisibility = { service ->
+                lifecycleScope.launch {
+                    database.serviceDao().updateVisibility(service.id, !service.isVisible)
+                    val action = if (service.isVisible) "hidden" else "shown"
+                    Toast.makeText(this@ServicesActivity, "${service.serviceName} $action", Toast.LENGTH_SHORT).show()
+                }
             }
         )
         
@@ -73,30 +88,40 @@ class ServicesActivity : AppCompatActivity() {
     private fun insertSampleServices() {
         val serviceDao = database.serviceDao()
         lifecycleScope.launch {
-            val sampleServices = listOf(
-                com.quickfix.services.data.model.Service(serviceName = "Plumber", description = "Fix pipes, leaks & water issues"),
-                com.quickfix.services.data.model.Service(serviceName = "Electrician", description = "Electrical repairs & installations"),
-                com.quickfix.services.data.model.Service(serviceName = "Mechanic", description = "Car & bike repair services"),
-                com.quickfix.services.data.model.Service(serviceName = "Cleaning", description = "Home & office cleaning"),
-                com.quickfix.services.data.model.Service(serviceName = "Carpenter", description = "Furniture & wood work"),
-                com.quickfix.services.data.model.Service(serviceName = "Painter", description = "Interior & exterior painting"),
-                com.quickfix.services.data.model.Service(serviceName = "AC Repair", description = "AC installation & maintenance"),
-                com.quickfix.services.data.model.Service(serviceName = "Appliance Repair", description = "Fix washing machine, fridge etc"),
-                com.quickfix.services.data.model.Service(serviceName = "Pest Control", description = "Remove insects & pests"),
-                com.quickfix.services.data.model.Service(serviceName = "Gardening", description = "Lawn care & plant maintenance"),
-                com.quickfix.services.data.model.Service(serviceName = "Locksmith", description = "Lock repair & key services"),
-                com.quickfix.services.data.model.Service(serviceName = "Beauty & Spa", description = "Home salon & spa services")
-            )
-            sampleServices.forEach { serviceDao.insert(it) }
+            try {
+                val sampleServices = listOf(
+                    com.quickfix.services.data.model.Service(serviceName = "Plumber", description = "Fix pipes, leaks & water issues", imageUrl = "", isVisible = true),
+                    com.quickfix.services.data.model.Service(serviceName = "Electrician", description = "Electrical repairs & installations", imageUrl = "", isVisible = true),
+                    com.quickfix.services.data.model.Service(serviceName = "Mechanic", description = "Car & bike repair services", imageUrl = "", isVisible = true),
+                    com.quickfix.services.data.model.Service(serviceName = "Cleaning", description = "Home & office cleaning", imageUrl = "", isVisible = true),
+                    com.quickfix.services.data.model.Service(serviceName = "Carpenter", description = "Furniture & wood work", imageUrl = "", isVisible = true),
+                    com.quickfix.services.data.model.Service(serviceName = "Painter", description = "Interior & exterior painting", imageUrl = "", isVisible = true),
+                    com.quickfix.services.data.model.Service(serviceName = "AC Repair", description = "AC installation & maintenance", imageUrl = "", isVisible = true),
+                    com.quickfix.services.data.model.Service(serviceName = "Appliance Repair", description = "Fix washing machine, fridge etc", imageUrl = "", isVisible = true),
+                    com.quickfix.services.data.model.Service(serviceName = "Pest Control", description = "Remove insects & pests", imageUrl = "", isVisible = true),
+                    com.quickfix.services.data.model.Service(serviceName = "Gardening", description = "Lawn care & plant maintenance", imageUrl = "", isVisible = true),
+                    com.quickfix.services.data.model.Service(serviceName = "Locksmith", description = "Lock repair & key services", imageUrl = "", isVisible = true),
+                    com.quickfix.services.data.model.Service(serviceName = "Beauty & Spa", description = "Home salon & spa services", imageUrl = "", isVisible = true)
+                )
+                sampleServices.forEach { serviceDao.insert(it) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
     private fun loadSampleServices() {
-        // Load services from database
+        // Load services from database based on user role
         lifecycleScope.launch {
-            database.serviceDao().getAllServices().collect { dbServices ->
+            val servicesFlow = if (isAdmin) {
+                database.serviceDao().getAllServices()
+            } else {
+                database.serviceDao().getVisibleServices()
+            }
+            
+            servicesFlow.collect { dbServices ->
                 services.clear()
-                services.addAll(dbServices.map { SimpleService(it.serviceName, it.description) })
+                services.addAll(dbServices)
                 serviceAdapter.notifyDataSetChanged()
             }
         }
@@ -107,14 +132,33 @@ class ServicesActivity : AppCompatActivity() {
         if (isAdmin) {
             fabAddService.visibility = android.view.View.VISIBLE
             fabAddService.setOnClickListener {
-                services.add(SimpleService("New Service", "Sample description"))
-                serviceAdapter.notifyDataSetChanged()
-                Toast.makeText(this, "Added new service", Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch {
+                    val newService = com.quickfix.services.data.model.Service(
+                        serviceName = "New Service",
+                        description = "Sample description",
+                        isVisible = true
+                    )
+                    database.serviceDao().insert(newService)
+                    Toast.makeText(this@ServicesActivity, "Added new service", Toast.LENGTH_SHORT).show()
+                }
             }
         } else {
             fabAddService.visibility = android.view.View.GONE
         }
     }
+    
+    private fun setupLogout() {
+        val buttonLogout = findViewById<android.widget.Button>(R.id.buttonLogout)
+        if (!isAdmin) {
+            buttonLogout.visibility = android.view.View.VISIBLE
+            buttonLogout.setOnClickListener {
+                val intent = android.content.Intent(this, com.quickfix.services.ui.login.LoginActivity::class.java)
+                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+        } else {
+            buttonLogout.visibility = android.view.View.GONE
+        }
+    }
 }
-
-data class SimpleService(val name: String, val description: String)

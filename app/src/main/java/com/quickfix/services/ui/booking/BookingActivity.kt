@@ -8,8 +8,10 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.quickfix.services.R
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -98,6 +100,27 @@ class BookingActivity : AppCompatActivity() {
         if (address.isEmpty() || contactInfo.isEmpty() || selectedDate.isEmpty() || selectedTime.isEmpty()) {
             Toast.makeText(this, "Please fill all fields and select date/time", Toast.LENGTH_SHORT).show()
             return
+        }
+
+        // Save booking to database with customer data
+        val serviceName = intent.getStringExtra("service_name") ?: "Unknown Service"
+        val customerName = intent.getStringExtra("customer_name") ?: "Guest Customer"
+        val customerEmail = intent.getStringExtra("customer_email") ?: "guest@quickfix.com"
+        
+        val booking = com.quickfix.services.data.model.Booking(
+            serviceName = serviceName,
+            providerName = providerName,
+            customerName = customerName,
+            customerEmail = customerEmail,
+            customerAddress = address,
+            customerContact = contactInfo,
+            bookingDate = selectedDate,
+            bookingTime = selectedTime
+        )
+        
+        lifecycleScope.launch {
+            com.quickfix.services.data.database.AppDatabase.getDatabase(this@BookingActivity)
+                .bookingDao().insert(booking)
         }
 
         Toast.makeText(this, "Booking confirmed!", Toast.LENGTH_SHORT).show()

@@ -9,13 +9,15 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.quickfix.services.R
+import com.quickfix.services.data.model.Service
 
 class ServiceAdapter(
-    private val services: List<SimpleService>,
+    private val services: List<Service>,
     private val isAdmin: Boolean,
-    private val onServiceClick: (SimpleService) -> Unit,
-    private val onEditClick: (SimpleService) -> Unit,
-    private val onDeleteClick: (SimpleService) -> Unit
+    private val onServiceClick: (Service) -> Unit,
+    private val onEditClick: (Service) -> Unit,
+    private val onDeleteClick: (Service) -> Unit,
+    private val onToggleVisibility: (Service) -> Unit
 ) : RecyclerView.Adapter<ServiceAdapter.ServiceViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ServiceViewHolder {
@@ -40,12 +42,12 @@ class ServiceAdapter(
         private val buttonEdit: Button = itemView.findViewById(R.id.buttonEdit)
         private val buttonDelete: Button = itemView.findViewById(R.id.buttonDelete)
 
-        fun bind(service: SimpleService) {
-            textServiceName.text = service.name
+        fun bind(service: Service) {
+            textServiceName.text = service.serviceName
             textServiceDescription.text = service.description
             
             // Set service-specific icon
-            val iconRes = when(service.name) {
+            val iconRes = when(service.serviceName) {
                 "Plumber" -> R.drawable.ic_plumber
                 "Electrician" -> R.drawable.ic_electrician
                 "Mechanic" -> R.drawable.ic_mechanic
@@ -66,6 +68,9 @@ class ServiceAdapter(
                 layoutAdminButtons.visibility = View.VISIBLE
                 buttonEdit.setOnClickListener { onEditClick(service) }
                 buttonDelete.setOnClickListener { onDeleteClick(service) }
+                
+                // Visual indication for hidden services
+                itemView.alpha = if (service.isVisible) 1.0f else 0.6f
             } else {
                 layoutAdminButtons.visibility = View.GONE
                 itemView.setOnClickListener { onServiceClick(service) }

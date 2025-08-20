@@ -6,6 +6,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ProviderDao {
+    @Query("SELECT * FROM providers")
+    fun getAllProviders(): Flow<List<Provider>>
+    
     @Query("SELECT * FROM providers WHERE serviceId = :serviceId")
     fun getProvidersByServiceId(serviceId: Long): Flow<List<Provider>>
 
