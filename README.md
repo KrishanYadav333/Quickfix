@@ -86,6 +86,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-Krishan Yadav - krishanyadav333@gmail.com
+Krishan Yadav - kryshan753@gmail.com
 
 Project Link: [https://github.com/krishanyadav333/quickfix-pro](https://github.com/krishanyadav333/quickfix-pro)
