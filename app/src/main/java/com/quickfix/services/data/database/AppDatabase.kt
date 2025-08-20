@@ -12,7 +12,7 @@ import com.quickfix.services.data.model.Provider
 @Database(
     entities = [Service::class, Provider::class],
     version = 1,
-    exportSchema = true
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun serviceDao(): ServiceDao

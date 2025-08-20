@@ -56,7 +56,7 @@ class ServicesActivity : AppCompatActivity() {
                     startActivity(intent)
                 }
             },
-            onEditClick = { service ->
+            onEditClick = { _ ->
                 // Edit functionality
             },
             onDeleteClick = { service ->

@@ -14,7 +14,7 @@
         tools:targetApi="31">
         
         <activity
-            android:name=".ui.login.LoginActivity"
+            android:name="com.quickfix.services.ui.login.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,23 +23,23 @@
         </activity>
         
         <activity
-            android:name=".ui.login.RegisterActivity"
+            android:name="com.quickfix.services.ui.login.RegisterActivity"
             android:exported="false" />
             
         <activity
-            android:name=".ui.services.ServicesActivity"
+            android:name="com.quickfix.services.ui.services.ServicesActivity"
             android:exported="false" />
             
         <activity
-            android:name=".ui.providers.ProvidersActivity"
+            android:name="com.quickfix.services.ui.providers.ProvidersActivity"
             android:exported="false" />
             
         <activity
-            android:name=".ui.booking.BookingActivity"
+            android:name="com.quickfix.services.ui.booking.BookingActivity"
             android:exported="false" />
             
         <activity
-            android:name=".ui.booking.BookingSuccessActivity"
+            android:name="com.quickfix.services.ui.booking.BookingSuccessActivity"
             android:exported="false" />
             
     </application>
